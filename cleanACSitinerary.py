@@ -35,17 +35,20 @@ Contains information for each event
     def formatparagraph(self):
         p=Paragraph(self.ss.ParagraphStyles.Normal)
         if self.type=="Event":
-            p.append(TEXT("%s - %s" % (self.starttime,self.endtime),colour=self.ss.Colours.Violet,size=12))
+            p.append(TEXT("%s - %s" % (self.starttime,self.endtime),colour=self.ss.Colours.Violet,size=16))
             p.append(TEXT(self.room[:-2],colour=self.ss.Colours.Red,size=12))
             p.append(TEXT(self.title,size=16))
             self.section.append(p)
         if self.type=="Intermission":
             pass
         if self.type=="Presentation":
-            p.append(TEXT(self.starttime,colour=self.ss.Colours.Violet,size=12))
+            p.append(TEXT(self.starttime,colour=self.ss.Colours.Violet,size=16))
             p.append(TEXT(self.room[:-2],colour=self.ss.Colours.Red,size=12))
             p.append(TEXT(self.title,size=16,colour=self.ss.Colours.Blue))
             p.append(TEXT(self.authors,size=14))
+            self.section.append(p)
+        if self.type=="Date":
+            p.append(TEXT(self.title,size=32))
             self.section.append(p)
         #reset everything except for room
         self.title=None
@@ -61,13 +64,14 @@ Contains information for each event
         if "August" in line and "2012" in line:
             self.type="Date"
             self.title=line
+            self.formatparagraph()
         if "Intermission" in line:
             self.type="Intermission"
             self.formatparagraph() #Don't print anything
         if "Title:" in line:
             self.title=line.split("Title:")[1]
         if "Room:" in line:
-            self.room = line[:-2]
+            self.room = line
             if self.type=="Event" :
                 self.formatparagraph() # This is the end for Events
         if "Presentation Time:" in line:
