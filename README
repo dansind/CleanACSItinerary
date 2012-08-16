@@ -1,0 +1,10 @@
+created by Dan Sindhikara
+sindhikara@gmail.com
+
+Instructions: 
+Construct your itinerary on the ACS website.
+Download it as text.
+Install PyRTF (if you haven't already) : http://sourceforge.net/projects/pyrtf/
+run this program 
+python cleanACSitinerary.py <textfilename>
+
