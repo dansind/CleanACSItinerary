@@ -20,36 +20,70 @@ Program converts ACS text itinerary to neat rtf
 import sys
 from PyRTF import *
 
-def formatline(line,p,ss):
 
-    endpara=False
-    if "Intermission" not in line:
+class Itinerary:
+    '''
+Contains information for each event      
+    '''
+    def __init__(self):
+        self.type="Presentation"# default
+        self.doc=Document()
+        self.ss=self.doc.StyleSheet
+        self.section=Section()
+        self.doc.Sections.append(self.section)
+
+    def formatparagraph(self):
+        p=Paragraph(self.ss.ParagraphStyles.Normal)
+        if self.type=="Event":
+            p.append(TEXT("%s - %s" % (self.starttime,self.endtime),colour=self.ss.Colours.Violet,size=12))
+            p.append(TEXT(self.room[:-2],colour=self.ss.Colours.Red,size=12))
+            p.append(TEXT(self.title,size=16))
+            self.section.append(p)
+        if self.type=="Intermission":
+            pass
+        if self.type=="Presentation":
+            p.append(TEXT(self.starttime,colour=self.ss.Colours.Violet,size=12))
+            p.append(TEXT(self.room[:-2],colour=self.ss.Colours.Red,size=12))
+            p.append(TEXT(self.title,size=16,colour=self.ss.Colours.Blue))
+            p.append(TEXT(self.authors,size=14))
+            self.section.append(p)
+        #reset everything except for room
+        self.title=None
+        self.type="Presentation"
+    def addline(self,line):
+        '''
+        Incorporate new line into this class, return -1 if a new Event object should be created
+        '''
+        if "Event Name:" in line:
+            self.type="Event"
+            splitline=line.split("Event Name:")
+            self.title=splitline[1]
         if "August" in line and "2012" in line:
-            p.append(TEXT(line,size=32))
-            endpara=True
-        if "Room" in line:
-            truncated=line[:-2]
-            p.append(TEXT(truncated,size=12,colour=ss.Colours.Red))
-        if "Presentation Time" in line:
-            splitline=line.split()
-            p.append(TEXT(" %s %s\n" % (splitline[-2],splitline[-1]),size=12,colour=ss.Colours.Violet))
-            #endpara=True
+            self.type="Date"
+            self.title=line
+        if "Intermission" in line:
+            self.type="Intermission"
+            self.formatparagraph() #Don't print anything
         if "Title:" in line:
-            splitline=line.split("Title:")
-            p.append(TEXT("%s" % splitline[1],size=16,colour=ss.Colours.Blue))
+            self.title=line.split("Title:")[1]
+        if "Room:" in line:
+            self.room = line[:-2]
+            if self.type=="Event" :
+                self.formatparagraph() # This is the end for Events
+        if "Presentation Time:" in line:
+            self.starttime=line.split("Presentation Time:")[-1]
+        if "Start Time:" in line:
+            self.starttime=line.split("Start Time:")[-1]
+        if "End Time:" in line:
+            self.endtime=line.split("End Time:")[-1]
         if "Authors:" in line:
             splitline=line.split("^M")
             splitline=splitline[0].split("Authors:")
-            p.append(TEXT("%s\n\n" % splitline[1],size=14))
-            endpara=True
-    return(p,endpara)
+            self.authors=splitline[1]
+            self.formatparagraph() # this the  end for presentations
 
+            
 def main():
-    doc = Document()
-    ss=doc.StyleSheet
-    section=Section()
-    doc.Sections.append(section)
-    p=Paragraph(ss.ParagraphStyles.Normal)
     minargs=1
     numargs=len(sys.argv)
     print '''
@@ -63,13 +97,11 @@ def main():
     	print "Insufficient arguments, need ",minargs," : ",numargs
     	exit()
     textfile=open(sys.argv[1])
+    myit=Itinerary()
     for line in textfile.readlines():
-        p,endpara=formatline(line,p,ss)
-        if endpara:
-            section.append(p)
-            p=Paragraph(ss.ParagraphStyles.Normal)
+        myit.addline(line)
     DR=Renderer()
-    DR.Write(doc,open("itinerary.rtf","w"))
+    DR.Write(myit.doc,open("itinerary.rtf","w"))
 
 if __name__ == '__main__' :
     main()
