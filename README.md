@@ -17,7 +17,7 @@ to make his 87-page-long ACS itinerary a bit shorter.
 
 Here's an example:
 
-![beforevsafter](./before_after.png)
+![beforevsafter](https://github.com/dansind/CleanACSItinerary/blob/master/before_after.png)
 
 
 ## Room for improvement
